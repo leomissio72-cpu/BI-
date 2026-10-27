@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guia Definitivo de Power BI e DAX — Leonardo Missio</title>
+  <meta name="description" content="Guia completo e prático de Power BI e DAX: modelagem Star Schema, medidas DAX, time intelligence, RLS, boas práticas e cheat sheet. Por Leonardo Missio.">
+  <meta property="og:title" content="Guia Definitivo de Power BI e DAX">
+  <meta property="og:description" content="Do zero ao avançado: modelagem, DAX, governança e boas práticas. Guia gratuito por Leonardo Missio.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090b;
+      --surface: #111113;
+      --card: #18181b;
+      --border: #27272a;
+      --border-hover: #52525b;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --accent: #f59e0b;
+      --accent2: #3b82f6;
+      --accent3: #10b981;
+      --accent4: #8b5cf6;
+      --danger: #ef4444;
+      --code-bg: #0f0f12;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .site-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(9,9,11,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px; gap: 1rem;
+    }
+    .brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; }
+    .brand-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .brand-name { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+    .brand-sub { font-size: 0.7rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+    .header-badge {
+      padding: 0.25rem 0.75rem; border-radius: 999px;
+      background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);
+      font-size: 0.7rem; font-weight: 700; color: var(--accent);
+      font-family: 'JetBrains Mono', monospace; text-transform: uppercase;
+    }
+    .header-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .btn-sm {
+      padding: 0.35rem 0.9rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;
+      transition: all 0.15s;
+    }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn-outline:hover { border-color: var(--border-hover); color: var(--text); }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:hover { background: #fbbf24; }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 4rem 1.5rem 3rem;
+      background: linear-gradient(180deg, #0f0f13 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-inner { max-width: 860px; margin: 0 auto; text-align: center; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.3rem 0.85rem; border-radius: 999px;
+      background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25);
+      font-size: 0.72rem; font-weight: 700; color: var(--accent);
+      font-family: 'JetBrains Mono', monospace; text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 1.25rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 900; line-height: 1.1; letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .hero-lead { font-size: 1.05rem; color: var(--muted); max-width: 660px; margin: 0 auto 2rem; }
+    .hero-meta {
+      display: flex; align-items: center; justify-content: center;
+      gap: 1.5rem; flex-wrap: wrap; margin-top: 2rem;
+    }
+    .hero-meta-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--muted); }
+    .hero-meta-item strong { color: var(--text); }
+    .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--border-hover); }
+
+    /* ── TABS ── */
+    .tabs-wrapper {
+      position: sticky; top: 56px; z-index: 90;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .tabs-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; gap: 0; overflow-x: auto;
+      scrollbar-width: none; padding: 0 1.5rem;
+    }
+    .tabs-inner::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      flex-shrink: 0; padding: 0 1rem; height: 44px;
+      background: none; border: none; border-bottom: 2px solid transparent;
+      color: var(--muted); font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ── MAIN LAYOUT ── */
+    .content { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── CARDS & SECTIONS ── */
+    .section-title {
+      font-size: 1.4rem; font-weight: 800; margin-bottom: 0.4rem; letter-spacing: -0.02em;
+    }
+    .section-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.4rem;
+    }
+    .card:hover { border-color: var(--border-hover); }
+    .card-icon { font-size: 1.6rem; margin-bottom: 0.75rem; }
+    .card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .card-text { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+    .tag {
+      display: inline-block; padding: 0.2rem 0.6rem; border-radius: 6px;
+      font-size: 0.68rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+    }
+    .tag-yellow { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: var(--accent); }
+    .tag-blue { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: var(--accent2); }
+    .tag-green { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--accent3); }
+    .tag-purple { background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); color: var(--accent4); }
+    .tag-red { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--danger); }
+
+    /* ── CODE BLOCKS ── */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+    .code-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.6rem 1rem;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border);
+    }
+    .code-lang { font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: var(--muted); text-transform: uppercase; }
+    .copy-btn {
+      padding: 0.25rem 0.65rem; border-radius: 6px;
+      background: var(--border); border: none;
+      color: var(--muted); font-size: 0.7rem; cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { background: var(--border-hover); color: var(--text); }
+    .copy-btn.copied { background: rgba(16,185,129,0.2); color: var(--accent3); }
+    pre { padding: 1.2rem; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.7; }
+    .kw { color: #c084fc; } /* keyword */
+    .fn { color: #60a5fa; } /* function */
+    .str { color: #86efac; } /* string */
+    .cmt { color: #52525b; font-style: italic; } /* comment */
+    .num { color: #fb923c; } /* number */
+    .op { color: #94a3b8; } /* operator */
+
+    /* ── CALLOUTS ── */
+    .callout {
+      border-radius: 12px; padding: 1rem 1.2rem;
+      border-left: 3px solid;
+      margin: 1rem 0;
+      font-size: 0.85rem;
+    }
+    .callout-tip { background: rgba(16,185,129,0.06); border-color: var(--accent3); }
+    .callout-warn { background: rgba(245,158,11,0.06); border-color: var(--accent); }
+    .callout-info { background: rgba(59,130,246,0.06); border-color: var(--accent2); }
+    .callout-title { font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+    .callout-tip .callout-title { color: var(--accent3); }
+    .callout-warn .callout-title { color: var(--accent); }
+    .callout-info .callout-title { color: var(--accent2); }
+
+    /* ── ACCORDION ── */
+    .accordion { border-radius: 12px; border: 1px solid var(--border); overflow: hidden; margin: 1rem 0; }
+    .acc-item { border-bottom: 1px solid var(--border); }
+    .acc-item:last-child { border-bottom: none; }
+    .acc-header {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.2rem; background: none; border: none;
+      color: var(--text); font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; text-align: left; transition: background 0.15s;
+    }
+    .acc-header:hover { background: rgba(255,255,255,0.03); }
+    .acc-chevron { transition: transform 0.2s; font-size: 0.75rem; color: var(--muted); }
+    .acc-item.open .acc-chevron { transform: rotate(180deg); }
+    .acc-body { display: none; padding: 0 1.2rem 1.2rem; font-size: 0.85rem; color: var(--muted); line-height: 1.8; }
+    .acc-item.open .acc-body { display: block; }
+
+    /* ── COMPARISON TABLE ── */
+    .table-wrap { overflow-x: auto; margin: 1rem 0; border-radius: 12px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    thead tr { background: rgba(255,255,255,0.04); border-bottom: 1px solid var(--border); }
+    th { padding: 0.75rem 1rem; text-align: left; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; text-transform: uppercase; color: var(--muted); }
+    td { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04); line-height: 1.5; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    td code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.8rem; }
+
+    /* ── CHEAT SHEET ── */
+    .cheat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    .cheat-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem;
+    }
+    .cheat-card-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 0.6rem; font-family: 'JetBrains Mono', monospace; }
+    .cheat-item { display: flex; justify-content: space-between; align-items: start; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.8rem; }
+    .cheat-item:last-child { border-bottom: none; }
+    .cheat-label { color: var(--muted); flex-shrink: 0; }
+    .cheat-val { font-family: 'JetBrains Mono', monospace; color: var(--accent2); text-align: right; font-size: 0.75rem; }
+
+    /* ── STEP FLOW ── */
+    .steps { counter-reset: step; display: flex; flex-direction: column; gap: 0.75rem; }
+    .step {
+      display: flex; gap: 1rem; align-items: start;
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem;
+    }
+    .step-num {
+      flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+      background: var(--accent); color: #000; font-size: 0.75rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .step-content { flex: 1; }
+    .step-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .step-text { font-size: 0.82rem; color: var(--muted); }
+
+    /* ── KPI ROW ── */
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin: 1.5rem 0; }
+    .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; text-align: center; }
+    .kpi-val { font-size: 1.6rem; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: var(--accent); }
+    .kpi-label { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+    h2.subsec { font-size: 1.1rem; font-weight: 800; margin: 1.5rem 0 0.75rem; }
+    h3.subsec { font-size: 0.95rem; font-weight: 700; margin: 1.25rem 0 0.5rem; color: var(--muted); }
+
+    /* ── FOOTER ── */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      background: var(--surface);
+    }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: gap; gap: 1rem; }
+    .footer-brand { font-size: 0.8rem; }
+    .footer-brand strong { color: var(--text); }
+    .footer-brand span { color: var(--muted); display: block; font-size: 0.72rem; margin-top: 0.1rem; }
+    .footer-links { display: flex; gap: 1rem; }
+    .footer-links a { color: var(--muted); font-size: 0.8rem; text-decoration: none; transition: color 0.15s; }
+    .footer-links a:hover { color: var(--text); }
+
+    /* ── LINKEDIN SHARE BOX ── */
+    .share-box {
+      background: linear-gradient(135deg, rgba(10,102,194,0.12) 0%, rgba(59,130,246,0.06) 100%);
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 16px; padding: 1.5rem 1.75rem;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+      margin: 2rem 0;
+    }
+    .share-box-left { display: flex; align-items: center; gap: 1rem; }
+    .share-box-icon { font-size: 2rem; }
+    .share-box-text strong { font-size: 0.95rem; display: block; }
+    .share-box-text span { font-size: 0.82rem; color: var(--muted); }
+    .btn-linkedin { background: #0a66c2; color: #fff; padding: 0.5rem 1.2rem; border-radius: 8px; border: none; font-size: 0.82rem; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn-linkedin:hover { background: #004182; }
+
+    @media (max-width: 640px) {
+      .header-badge { display: none; }
+      .hero { padding: 2.5rem 1rem 2rem; }
+      .content { padding: 1.5rem 1rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="#">
+      <div class="brand-icon">📊</div>
+      <div>
+        <div class="brand-name">Guia Power BI & DAX</div>
+        <div class="brand-sub">por Leonardo Missio</div>
+      </div>
+    </a>
+    <span class="header-badge">Gratuito · 2025</span>
+    <div class="header-actions">
+      <a class="btn-sm btn-outline" href="https://www.linkedin.com/in/leonardo-henrique-silva-missio/" target="_blank" rel="noopener">LinkedIn</a>
+      <a class="btn-sm btn-primary" href="mailto:leomissio72@gmail.com">Contato</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">✦ Recurso Gratuito · Power BI & DAX</div>
+    <h1>Guia Definitivo de<br><em>Power BI e DAX</em></h1>
+    <p class="hero-lead">Do zero ao avançado — modelagem de dados, medidas DAX, time intelligence, governança RLS e boas práticas de produção. Um guia prático para analistas e engenheiros de dados.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><span>📚</span> <strong>6 módulos</strong> <span>completos</span></div>
+      <div class="dot"></div>
+      <div class="hero-meta-item"><span>🧪</span> <strong>50+ fórmulas</strong> <span>DAX comentadas</span></div>
+      <div class="dot"></div>
+      <div class="hero-meta-item"><span>⚡</span> <strong>Cheat sheet</strong> <span>para download</span></div>
+      <div class="dot"></div>
+      <div class="hero-meta-item"><span>👤</span> <strong>Leonardo Missio</strong> <span>— BI Specialist</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- TABS -->
+<div class="tabs-wrapper">
+  <div class="tabs-inner" id="tabBar">
+    <button class="tab-btn active" data-tab="intro">01 · Introdução</button>
+    <button class="tab-btn" data-tab="modelagem">02 · Modelagem</button>
+    <button class="tab-btn" data-tab="dax-basico">03 · DAX Básico</button>
+    <button class="tab-btn" data-tab="dax-avancado">04 · DAX Avançado</button>
+    <button class="tab-btn" data-tab="boas-praticas">05 · Boas Práticas</button>
+    <button class="tab-btn" data-tab="cheatsheet">06 · Cheat Sheet</button>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<main class="content">
+
+  <!-- ─────────────────────────────────── -->
+  <!-- TAB 1: INTRODUÇÃO -->
+  <!-- ─────────────────────────────────── -->
+  <div class="tab-panel active" id="tab-intro">
+    <p class="section-title">O que é Power BI?</p>
+    <p class="section-desc">Plataforma de Business Intelligence da Microsoft para conectar, transformar, modelar e visualizar dados de forma interativa.</p>
+
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-val">35+</div><div class="kpi-label">Conectores nativos</div></div>
+      <div class="kpi-card"><div class="kpi-val">DAX</div><div class="kpi-label">Linguagem de análise</div></div>
+      <div class="kpi-card"><div class="kpi-val">M</div><div class="kpi-label">Power Query (ETL)</div></div>
+      <div class="kpi-card"><div class="kpi-val">RLS</div><div class="kpi-label">Segurança por linha</div></div>
+    </div>
+
+    <div class="grid-3" style="margin-bottom:2rem;">
+      <div class="card">
+        <div class="card-icon">🔌</div>
+        <div class="card-title">Power Query (M)</div>
+        <div class="card-text">Camada ETL visual para conexão, limpeza e transformação de dados de qualquer fonte. Linguagem M para transformações avançadas.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧮</div>
+        <div class="card-title">DAX — Data Analysis Expressions</div>
+        <div class="card-text">Linguagem funcional para criar medidas, colunas calculadas e tabelas calculadas. Base do motor VertiPaq analítico.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Visualizações & Relatórios</div>
+        <div class="card-text">Canvas interativo com +30 visuais nativos, visuais customizados do marketplace e publicação no Power BI Service.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏗️</div>
+        <div class="card-title">Modelo de Dados (VertiPaq)</div>
+        <div class="card-text">Motor colunar em memória otimizado para compressão. Suporta Star Schema, relações e hierarquias.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">☁️</div>
+        <div class="card-title">Power BI Service</div>
+        <div class="card-text">Plataforma cloud para publicar, compartilhar e colaborar. Workspaces, pipelines de implantação e gateway.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔒</div>
+        <div class="card-title">RLS — Segurança por Linha</div>
+        <div class="card-text">Filtros dinâmicos por usuário. Cada pessoa vê apenas os dados permitidos para seu papel ou filial.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h2 class="subsec">Arquitetura do Fluxo de Dados</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Fonte de Dados</div>
+          <div class="step-text">SQL Server, Excel, SharePoint, APIs REST, Databricks, SAP, Google Sheets, arquivos CSV, Web, etc.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Power Query (ETL)</div>
+          <div class="step-text">Extração, limpeza, transformação e carregamento. Remoção de duplicatas, pivotamento, merge de tabelas, normalização de tipos.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Modelo de Dados (VertiPaq)</div>
+          <div class="step-text">Modelagem dimensional (Star Schema), relações 1:N, tabela de medidas, hierarquias e tipos de dados corretos.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">DAX — Cálculos e KPIs</div>
+          <div class="step-text">Medidas, colunas calculadas, tabelas calculadas, time intelligence, filtros dinâmicos com CALCULATE e FILTER.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Visualizações & Relatórios</div>
+          <div class="step-text">Design do dashboard, hierarquia visual de KPIs, filtros, slicers, drillthroughs, bookmarks e tooltips.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <div class="step-title">Publicação & Governança</div>
+          <div class="step-text">Publicação no Service, RLS, atualização agendada via Gateway, workspaces Premium e pipelines de implantação (dev → hom → prod).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-info" style="margin-top:2rem;">
+      <div class="callout-title">💡 Diferença: Desktop vs Service</div>
+      <strong>Power BI Desktop</strong> — IDE gratuita para criação de modelos e relatórios (.pbix). Roda localmente.<br>
+      <strong>Power BI Service</strong> — Plataforma cloud (app.powerbi.com) para publicar, compartilhar e automatizar atualizações. Requer licença Pro ou Premium.
+    </div>
+
+    <div class="share-box" style="margin-top:2rem;">
+      <div class="share-box-left">
+        <div class="share-box-icon">in</div>
+        <div class="share-box-text">
+          <strong>Gostou do guia? Compartilhe no LinkedIn!</strong>
+          <span>Ajude outros profissionais de dados a evoluir com Power BI e DAX.</span>
+        </div>
+      </div>
+      <a class="btn-linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fleomissio72-cpu.github.io%2Fportifolio%2Fguia-powerbi-dax.html" target="_blank" rel="noopener">Compartilhar</a>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────── -->
+  <!-- TAB 2: MODELAGEM -->
+  <!-- ─────────────────────────────────── -->
+  <div class="tab-panel" id="tab-modelagem">
+    <p class="section-title">Modelagem de Dados — Star Schema</p>
+    <p class="section-desc">O modelo dimensional correto é a base de qualquer solução BI de alto desempenho. Star Schema é o padrão ouro.</p>
+
+    <div class="callout callout-warn">
+      <div class="callout-title">⚠️ Regra nº 1</div>
+      Nunca construa visuais sem um modelo de dados bem estruturado. Um modelo ruim gera DAX complexo, lento e incorreto.
+    </div>
+
+    <h2 class="subsec">Star Schema: Fato + Dimensões</h2>
+    <div class="grid-2">
+      <div class="card">
+        <span class="tag tag-yellow" style="margin-bottom:0.6rem;">TABELA FATO</span>
+        <div class="card-title">fVendas / fAtendimentos / fFinanceiro</div>
+        <div class="card-text" style="margin-top:0.5rem;">
+          Contém as <strong>métricas e eventos</strong> do negócio (quantidades, valores, datas).<br><br>
+          ✅ Chaves estrangeiras (FK) para dimensões<br>
+          ✅ Colunas numéricas (valor, qtd, duração)<br>
+          ✅ Granularidade baixa (uma linha = um evento)<br>
+          ❌ Sem textos descritivos (mova para dimensões)<br>
+          ❌ Sem colunas calculadas desnecessárias
+        </div>
+      </div>
+      <div class="card">
+        <span class="tag tag-blue" style="margin-bottom:0.6rem;">TABELA DIMENSÃO</span>
+        <div class="card-title">dCliente / dProduto / dCalendario / dFilial</div>
+        <div class="card-text" style="margin-top:0.5rem;">
+          Contém os <strong>atributos descritivos</strong> para filtrar e agrupar.<br><br>
+          ✅ Chave primária (PK) única<br>
+          ✅ Atributos de texto (nome, categoria, tipo)<br>
+          ✅ Hierarquias (Ano → Mês → Dia)<br>
+          ✅ Tabela pequena (poucas linhas, muitas colunas)<br>
+          ❌ Sem relações entre dimensões
+        </div>
+      </div>
+    </div>
+
+    <h2 class="subsec">Tabela de Calendário (obrigatória!)</h2>
+    <div class="callout callout-tip">
+      <div class="callout-title">✅ Boa prática</div>
+      Toda solução Power BI precisa de uma tabela dCalendario contínua, marcada como <strong>Tabela de Datas</strong>, cobrindo todo o intervalo da tabela Fato.
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">DAX — dCalendario</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre><span class="cmt">-- Cria tabela de datas completa com DAX</span>
+<span class="fn">dCalendario</span> <span class="op">=</span>
+<span class="kw">VAR</span> DataInicial <span class="op">=</span> <span class="fn">DATE</span>(<span class="num">2020</span>, <span class="num">1</span>, <span class="num">1</span>)
+<span class="kw">VAR</span> DataFinal   <span class="op">=</span> <span class="fn">DATE</span>(<span class="num">2025</span>, <span class="num">12</span>, <span class="num">31</span>)
+<span class="kw">RETURN</span>
+<span class="fn">ADDCOLUMNS</span>(
+    <span class="fn">CALENDAR</span>(DataInicial, DataFinal),
+    <span class="str">"DateKey"</span>,      <span class="fn">INT</span>(<span class="fn">FORMAT</span>([Date], <span class="str">"YYYYMMDD"</span>)),
+    <span class="str">"Ano"</span>,           <span class="fn">YEAR</span>([Date]),
+    <span class="str">"MesNum"</span>,        <span class="fn">MONTH</span>([Date]),
+    <span class="str">"NomeMes"</span>,       <span class="fn">FORMAT</span>([Date], <span class="str">"mmm"</span>),
+    <span class="str">"AnoMes"</span>,        <span class="fn">FORMAT</span>([Date], <span class="str">"YYYY-MM"</span>),
+    <span class="str">"AnoMesNum"</span>,     <span class="fn">YEAR</span>([Date]) <span class="op">*</span> <span class="num">100</span> <span class="op">+</span> <span class="fn">MONTH</span>([Date]),
+    <span class="str">"Trimestre"</span>,     <span class="str">"T"</span> <span class="op">&amp;</span> <span class="fn">INT</span>((<span class="fn">MONTH</span>([Date]) <span class="op">+</span> <span class="num">2</span>) <span class="op">/</span> <span class="num">3</span>),
+    <span class="str">"Semana"</span>,        <span class="fn">WEEKNUM</span>([Date], <span class="num">2</span>),
+    <span class="str">"DiaDaSemana"</span>,   <span class="fn">WEEKDAY</span>([Date], <span class="num">2</span>),
+    <span class="str">"NomeDia"</span>,       <span class="fn">FORMAT</span>([Date], <span class="str">"dddd"</span>),
+    <span class="str">"EhDiaUtil"</span>,     <span class="fn">IF</span>(<span class="fn">WEEKDAY</span>([Date], <span class="num">2</span>) <span class="op">&lt;=</span> <span class="num">5</span>, <span class="num">1</span>, <span class="num">0</span>),
+    <span class="str">"EhHoje"</span>,        <span class="fn">IF</span>([Date] <span class="op">=</span> <span class="fn">TODAY</span>(), <span class="num">1</span>, <span class="num">0</span>)
+)</pre>
+    </div>
+
+    <h2 class="subsec">Tipos de Relações</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Tipo</th><th>Cardinalidade</th><th>Direção do Filtro</th><th>Uso recomendado</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>⭐ Padrão</td><td>1:N (Dimensão → Fato)</td><td>Única</td><td>Star Schema clássico — use sempre que possível</td></tr>
+          <tr><td>🔄 Bidirecional</td><td>1:N ou N:N</td><td>Ambas</td><td>Apenas quando necessário — impacto na performance</td></tr>
+          <tr><td>⚠️ N:N</td><td>Muitos para muitos</td><td>Única ou bidirecional</td><td>Evitar; use tabela de bridge quando necessário</td></tr>
+          <tr><td>🔒 Inativo</td><td>Qualquer</td><td>Nenhuma (manual)</td><td>Múltiplas datas — ativar com USERELATIONSHIP()</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="subsec">Antipadrões a Evitar</h2>
+    <div class="accordion">
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)"><span>❌ Tabela "Flat" (tudo em uma tabela)</span><span class="acc-chevron">▼</span></button>
+        <div class="acc-body">Modelos com uma única tabela gigante tornam DAX impossível, criam ambiguidades e não aproveitam o motor VertiPaq. Normalize seus dados em Fato + Dimensões separados.</div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)"><span>❌ Colunas calculadas em vez de medidas</span><span class="acc-chevron">▼</span></button>
+        <div class="acc-body">Colunas calculadas são armazenadas fisicamente no modelo — aumentam o tamanho do .pbix e são processadas na atualização. Use medidas sempre que possível para cálculos dinâmicos.</div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)"><span>❌ Relações bidirecionais sem critério</span><span class="acc-chevron">▼</span></button>
+        <div class="acc-body">Relações bidirecionais podem criar loops de filtro e resultados inesperados. Use CROSSFILTER() ou USERELATIONSHIP() dentro de medidas DAX para controle preciso.</div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)"><span>❌ Sem tabela de datas separada</span><span class="acc-chevron">▼</span></button>
+        <div class="acc-body">As funções de Time Intelligence do DAX (SAMEPERIODLASTYEAR, TOTALYTD etc.) exigem uma tabela de datas marcada como "Tabela de Datas" com datas contínuas e sem lacunas.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────── -->
+  <!-- TAB 3: DAX BÁSICO -->
+  <!-- ─────────────────────────────────── -->
+  <div class="tab-panel" id="tab-dax-basico">
+    <p class="section-title">DAX — Fundamentos Essenciais</p>
+    <p class="section-desc">Data Analysis Expressions: linguagem funcional baseada em contexto de linha e contexto de filtro.</p>
+
+    <div class="grid-2" style="margin-bottom:1.5rem;">
+      <div class="card">
+        <span class="tag tag-yellow" style="margin-bottom:0.5rem;">MEDIDA (Measure)</span>
+        <div class="card-text">Calculada dinamicamente conforme o contexto do visual. Não ocupa espaço no modelo. É a abordagem preferida para KPIs.<br><br><code style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:#fbbf24;">Total Vendas := SUM(fVendas[Valor])</code></div>
+      </div>
+      <div class="card">
+        <span class="tag tag-blue" style="margin-bottom:0.5rem;">COLUNA CALCULADA</span>
+        <div class="card-text">Avaliada linha a linha na carga de dados. Armazenada fisicamente. Use apenas quando precisar do valor para filtrar/agrupar (ex: faixa de preço).<br><br><code style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:#60a5fa;">Categoria Valor = IF([Valor]>1000,"Alto","Baixo")</code></div>
+      </div>
+    </div>
+
+    <h2 class="subsec">Medidas Fundamentais</h2>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">DAX — Agregações básicas</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">-- Soma simples</span>
+<span class="fn">Total Vendas</span> <span class="op">:=</span> <span class="fn">SUM</span>(fVendas[Valor])
+
+<span class="cmt">-- Contagem de linhas com filtro</span>
+<span class="fn">Qtd Pedidos</span> <span class="op">:=</span> <span class="fn">COUNTROWS</span>(fVendas)
+
+<span class="cmt">-- Contagem de valores únicos</span>
+<span class="fn">Qtd Clientes Únicos</span> <span class="op">:=</span> <span class="fn">DISTINCTCOUNT</span>(fVendas[ClienteID])
+
+<span class="cmt">-- Ticket médio com tratamento de divisão por zero</span>
+<span class="fn">Ticket Médio</span> <span class="op">:=</span> <span class="fn">DIVIDE</span>([Total Vendas], [Qtd Pedidos], <span class="num">0</span>)
+
+<span class="cmt">-- Máximo e mínimo</span>
+<span class="fn">Maior Venda</span>  <span class="op">:=</span> <span class="fn">MAX</span>(fVendas[Valor])
+<span class="fn">Menor Venda</span>  <span class="op">:=</span> <span class="fn">MIN</span>(fVendas[Valor])
+
+<span class="cmt">-- Média com AVERAGEX para lógica personalizada</span>
+<span class="fn">Média por Cliente</span> <span class="op">:=</span>
+<span class="fn">AVERAGEX</span>(
+    <span class="fn">SUMMARIZE</span>(fVendas, fVendas[ClienteID]),
+    [Total Vendas]
+)</pre>
+    </div>
+
+    <h2 class="subsec">Contexto de Filtro vs Contexto de Linha</h2>
+    <div class="callout callout-info">
+      <div class="callout-title">🧠 Conceito Fundamental</div>
+      <strong>Contexto de Filtro:</strong> conjunto de filtros aplicados por slicers, visuais e relações. Medidas são avaliadas nesse contexto.<br>
+      <strong>Contexto de Linha:</strong> linha atual sendo processada em uma iteração (SUMX, AVERAGEX, etc.). Contexto de linha NÃO propaga filtros automaticamente — use RELATED() para isso.
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">DAX — Contexto e iteração</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">-- SUMX: itera linha a linha na tabela</span>
+<span class="fn">Total com Desconto</span> <span class="op">:=</span>
+<span class="fn">SUMX</span>(
+    fVendas,
+    fVendas[Quantidade] <span class="op">*</span> fVendas[PrecoUnitario] <span class="op">*</span> (<span class="num">1</span> <span class="op">-</span> fVendas[Desconto])
+)
+
+<span class="cmt">-- RELATED: acessa coluna de tabela relacionada no contexto de linha</span>
+<span class="fn">Margem Bruta</span> <span class="op">:=</span>
+<span class="fn">SUMX</span>(
+    fVendas,
+    fVendas[Valor] <span class="op">-</span> <span class="fn">RELATED</span>(dProduto[CustoUnitario]) <span class="op">*</span> fVendas[Quantidade]
+)
+
+<span class="cmt">-- % sobre total (contexto removido com ALL)</span>
+<span class="fn">% Participação Vendas</span> <span class="op">:=</span>
+<span class="fn">DIVIDE</span>(
+    [Total Vendas],
+    <span class="fn">CALCULATE</span>([Total Vendas], <span class="fn">ALL</span>(dProduto)),
+    <span class="num">0</span>
+)</pre>
+    </div>
+
+    <h2 class="subsec">Funções Lógicas e de Texto</h2>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">DAX — IF, SWITCH, FORMAT</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">-- IF simples</span>
+<span class="fn">Status Meta</span> <span class="op">:=</span>
+<span class="fn">IF</span>([Total Vendas] <span class="op">&gt;=</span> [Meta], <span class="str">"✅ Atingiu"</span>, <span class="str">"❌ Abaixo"</span>)
+
+<span class="cmt">-- SWITCH para múltiplas condições (mais eficiente que IF aninhado)</span>
+<span class="fn">Faixa de Desempenho</span> <span class="op">:=</span>
+<span class="fn">SWITCH</span>(
+    <span class="kw">TRUE</span>(),
+    [% Atingimento] <span class="op">&gt;=</span> <span class="num">1.00</span>, <span class="str">"🟢 Excelente"</span>,
+    [% Atingimento] <span class="op">&gt;=</span> <span class="num">0.80</span>, <span class="str">"🟡 Bom"</span>,
+    [% Atingimento] <span class="op">&gt;=</span> <span class="num">0.60</span>, <span class="str">"🟠 Regular"</span>,
+    <span class="str">"🔴 Crítico"</span>
+)
+
+<span class="cmt">-- FORMAT para exibição</span>
+<span class="fn">Receita Formatada</span> <span class="op">:=</span>
+<span class="fn">FORMAT</span>([Total Vendas], <span class="str">"R$ #,##0.00"</span>)
+
+<span class="cmt">-- COALESCE: retorna primeiro valor não vazio (substituindo IF + ISBLANK)</span>
+<span class="fn">Nome Cliente Seguro</span> <span class="op">:=</span>
+<span class="fn">COALESCE</span>(<span class="fn">MAX</span>(dCliente[NomeCompleto]), <span class="str">"Não Identificado"</span>)</pre>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────── -->
+  <!-- TAB 4: DAX AVANÇADO -->
+  <!-- ─────────────────────────────────── -->
+  <div class="tab-panel" id="tab-dax-avancado">
+    <p class="section-title">DAX Avançado — CALCULATE, Time Intelligence e Filtros</p>
+    <p class="section-desc">CALCULATE é a função mais poderosa do DAX. Dominar seu comportamento é dominar o Power BI.</p>
+
+    <h2 class="subsec">CALCULATE — Modificando o Contexto</h2>
+    <div class="callout callout-warn">
+      <div class="callout-title">⚡ Regra de Ouro</div>
+      CALCULATE transforma contexto de linha em contexto de filtro AND sobrescreve/adiciona filtros. Cada argumento depois da expressão é um modificador de filtro.
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">DAX — CALCULATE e modificadores</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">-- Vendas apenas da categoria "Eletrônicos"</span>
+<span class="fn">Vendas Eletrônicos</span> <span class="op">:=</span>
+<span class="fn">CALCULATE</span>(
+    [Total Vendas],
+    dProduto[Categoria] <span class="op">=</span> <span class="str">"Eletrônicos"</span>
+)
+
+<span class="cmt">-- ALL: remove todos os filtros de uma tabela/coluna</span>
+<span class="fn">Total Geral Vendas</span> <span class="op">:=</span>
+<span class="fn">CALCULATE</span>([Total Vendas], <span class="fn">ALL</span>(dProduto))
+
+<span class="cmt">-- ALLEXCEPT: mantém apenas os filtros especificados</span>
+<span class="fn">Vendas Região Total</span> <span class="op">:=</span>
+<span class="fn">CALCULATE</span>([Total Vendas], <span class="fn">ALLEXCEPT</span>(dFilial, dFilial[Região]))
+
+<span class="cmt">-- KEEPFILTERS: adiciona sem sobrescrever o filtro existente</span>
+<span class="fn">Vendas SP Restrito</span> <span class="op">:=</span>
+<span class="fn">CALCULATE</span>(
+    [Total Vendas],
+    <span class="fn">KEEPFILTERS</span>(dFilial[UF] <span class="op">=</span> <span class="str">"SP"</span>)
+)
+
+<span class="cmt">-- REMOVEFILTERS (alias de ALL, mais legível)</span>
+<span class="fn">Vendas Sem Filtro Data</span> <span class="op">:=</span>
+<span class="fn">CALCULATE</span>([Total Vendas], <span class="fn">REMOVEFILTERS</span>(dCalendario))</pre>
+    </div>
+
+    <h2 class="subsec">Time Intelligence — Análise Temporal</h2>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">DAX — Time Intelligence completo</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">-- YTD: acumulado do ano até a data selecionada</span>
+<span class="fn">Vendas YTD</span> <span class="op">:=</span>
+<span class="fn">TOTALYTD</span>([Total Vendas], dCalendario[Date])
+
+<span class="cmt">-- MTD: acumulado do mês até hoje</span>
+<span class="fn">Vendas MTD</span> <span class="op">:=</span>
+<span class="fn">TOTALMTD</span>([Total Vendas], dCalendario[Date])
+
+<span class="cmt">-- Mesmo período do ano anterior (LY)</span>
+<span class="fn">Vendas LY</span> <span class="op">:=</span>
+<span class="fn">CALCULATE</span>([Total Vendas], <span class="fn">SAMEPERIODLASTYEAR</span>(dCalendario[Date]))
+
+<span class="cmt">-- Variação YoY em %</span>
+<span class="fn">Crescimento YoY %</span> <span class="op">:=</span>
+<span class="fn">DIVIDE</span>([Total Vendas] <span class="op">-</span> [Vendas LY], [Vendas LY], <span class="num">0</span>)
+
+<span class="cmt">-- MoM: comparação com mês anterior</span>
+<span class="fn">Vendas Mês Anterior</span> <span class="op">:=</span>
+<span class="fn">CALCULATE</span>([Total Vendas], <span class="fn">PREVIOUSMONTH</span>(dCalendario[Date]))
+
+<span class="cmt">-- Rolling 3 meses (últimos 90 dias)</span>
+<span class="fn">Vendas Rolling 3M</span> <span class="op">:=</span>
+<span class="fn">CALCULATE</span>(
+    [Total Vendas],
+    <span class="fn">DATESINPERIOD</span>(dCalendario[Date], <span class="fn">LASTDATE</span>(dCalendario[Date]), <span class="op">-</span><span class="num">3</span>, <span class="fn">MONTH</span>)
+)
+
+<span class="cmt">-- YTD do ano anterior (para comparação YTD vs LY YTD)</span>
+<span class="fn">Vendas LY YTD</span> <span class="op">:=</span>
+<span class="fn">CALCULATE</span>(
+    <span class="fn">TOTALYTD</span>([Total Vendas], dCalendario[Date]),
+    <span class="fn">SAMEPERIODLASTYEAR</span>(dCalendario[Date])
+)</pre>
+    </div>
+
+    <h2 class="subsec">Ranking e Classificação</h2>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">DAX — RANKX e TOP N</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">-- Rank de produto por vendas (1 = maior)</span>
+<span class="fn">Rank Produto</span> <span class="op">:=</span>
+<span class="fn">RANKX</span>(
+    <span class="fn">ALL</span>(dProduto[NomeProduto]),
+    [Total Vendas],
+    ,
+    <span class="fn">DESC</span>,
+    <span class="fn">DENSE</span>
+)
+
+<span class="cmt">-- Flag: é TOP 5?</span>
+<span class="fn">É Top 5</span> <span class="op">:=</span>
+<span class="fn">IF</span>([Rank Produto] <span class="op">&lt;=</span> <span class="num">5</span>, <span class="str">"⭐ Top 5"</span>, <span class="str">"Outros"</span>)
+
+<span class="cmt">-- Percentil 80 (Pareto / análise ABC)</span>
+<span class="fn">Vendas Acumuladas %</span> <span class="op">:=</span>
+<span class="kw">VAR</span> RankAtual <span class="op">=</span> [Rank Produto]
+<span class="kw">RETURN</span>
+<span class="fn">DIVIDE</span>(
+    <span class="fn">SUMX</span>(
+        <span class="fn">FILTER</span>(<span class="fn">ALL</span>(dProduto), [Rank Produto] <span class="op">&lt;=</span> RankAtual),
+        [Total Vendas]
+    ),
+    <span class="fn">CALCULATE</span>([Total Vendas], <span class="fn">ALL</span>(dProduto))
+)</pre>
+    </div>
+
+    <h2 class="subsec">Variáveis (VAR / RETURN) — Melhor Prática</h2>
+    <div class="callout callout-tip">
+      <div class="callout-title">✅ Use VAR sempre que possível</div>
+      Variáveis melhoram legibilidade, evitam recálculos e facilitam debug. O DAX avalia cada VAR uma vez no contexto em que foi declarada.
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">DAX — VAR / RETURN avançado</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="fn">Análise de Meta</span> <span class="op">:=</span>
+<span class="kw">VAR</span> VendasAtual <span class="op">=</span> [Total Vendas]
+<span class="kw">VAR</span> VendasLY    <span class="op">=</span> [Vendas LY]
+<span class="kw">VAR</span> Meta        <span class="op">=</span> VendasLY <span class="op">*</span> <span class="num">1.1</span>     <span class="cmt">-- 10% acima do LY</span>
+<span class="kw">VAR</span> Gap         <span class="op">=</span> VendasAtual <span class="op">-</span> Meta
+<span class="kw">VAR</span> GapPct      <span class="op">=</span> <span class="fn">DIVIDE</span>(Gap, Meta, <span class="num">0</span>)
+<span class="kw">RETURN</span>
+<span class="fn">SWITCH</span>(
+    <span class="kw">TRUE</span>(),
+    <span class="fn">ISBLANK</span>(VendasLY),       <span class="str">"Sem histórico"</span>,
+    GapPct <span class="op">&gt;=</span>  <span class="num">0.05</span>,          <span class="str">"🟢 Superou meta"</span>,
+    GapPct <span class="op">&gt;=</span>  <span class="num">0</span>,             <span class="str">"🟡 Dentro da meta"</span>,
+    GapPct <span class="op">&gt;=</span> <span class="op">-</span><span class="num">0.10</span>,          <span class="str">"🟠 Abaixo (-10%)"</span>,
+    <span class="str">"🔴 Crítico (&gt; -10%)"</span>
+)</pre>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────── -->
+  <!-- TAB 5: BOAS PRÁTICAS -->
+  <!-- ─────────────────────────────────── -->
+  <div class="tab-panel" id="tab-boas-praticas">
+    <p class="section-title">Boas Práticas de Produção</p>
+    <p class="section-desc">Governança, performance, segurança e padrões que diferenciam soluções amateurs de soluções enterprise.</p>
+
+    <div class="grid-2" style="margin-bottom:2rem;">
+      <div class="card">
+        <span class="tag tag-green" style="margin-bottom:0.6rem;">PERFORMANCE</span>
+        <div class="card-title" style="margin-top:0.5rem;">Otimização do Modelo</div>
+        <div class="card-text" style="margin-top:0.5rem;">
+          ✅ Medir com Performance Analyzer (PBI Desktop)<br>
+          ✅ Preferir medidas a colunas calculadas<br>
+          ✅ Usar DIVIDE() no lugar de "/"<br>
+          ✅ Evitar FILTER(ALL()) quando possível<br>
+          ✅ Preferir SELECTEDVALUE() a HASONEVALUE() + VALUES()<br>
+          ✅ Remover colunas não utilizadas do modelo<br>
+          ✅ Definir tipos de dados corretos (inteiro &gt; texto)
+        </div>
+      </div>
+      <div class="card">
+        <span class="tag tag-purple" style="margin-bottom:0.6rem;">GOVERNANÇA</span>
+        <div class="card-title" style="margin-top:0.5rem;">Padronização e Documentação</div>
+        <div class="card-text" style="margin-top:0.5rem;">
+          ✅ Prefixo de tabelas: <code>f</code>Vendas, <code>d</code>Produto<br>
+          ✅ Tabela de medidas: <code>_Medidas</code><br>
+          ✅ Nomenclatura de medidas: sem abreviações<br>
+          ✅ Pastas de medidas por tema (Financeiro, RH...)<br>
+          ✅ Dicionário de dados atualizado<br>
+          ✅ Pipeline: Dev → Homologação → Produção<br>
+          ✅ Versionar .pbix no Git (via Git integration)
+        </div>
+      </div>
+    </div>
+
+    <h2 class="subsec">RLS — Row-Level Security</h2>
+    <div class="callout callout-warn">
+      <div class="callout-title">🔒 Segurança obrigatória</div>
+      Nunca publique relatórios com dados sensíveis (financeiro, RH, saúde) sem RLS configurado e testado com todos os papéis.
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">DAX — RLS estático e dinâmico</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">-- RLS Estático: filtra pela coluna diretamente</span>
+<span class="cmt">-- (configurado na UI do Power BI Desktop → Gerenciar Funções)</span>
+dFilial[UF] <span class="op">=</span> <span class="str">"SP"</span>
+
+<span class="cmt">-- RLS Dinâmico: usa o e-mail do usuário autenticado</span>
+<span class="cmt">-- Na tabela dUsuarios com colunas: Email, FilialID, Perfil</span>
+[Email] <span class="op">=</span> <span class="fn">USERPRINCIPALNAME</span>()
+
+<span class="cmt">-- Medida para verificar o papel do usuário logado</span>
+<span class="fn">Perfil Usuário</span> <span class="op">:=</span>
+<span class="kw">VAR</span> Email <span class="op">=</span> <span class="fn">USERPRINCIPALNAME</span>()
+<span class="kw">RETURN</span>
+<span class="fn">CALCULATE</span>(
+    <span class="fn">MAX</span>(dUsuarios[Perfil]),
+    dUsuarios[Email] <span class="op">=</span> Email
+)
+
+<span class="cmt">-- Para testar RLS: Power BI Desktop → Modelagem → Exibir Como</span></pre>
+    </div>
+
+    <h2 class="subsec">Checklist de Publicação</h2>
+    <div class="accordion">
+      <div class="acc-item open">
+        <button class="acc-header" onclick="toggleAcc(this)"><span>🏗️ Modelagem</span><span class="acc-chevron">▼</span></button>
+        <div class="acc-body" style="display:block;">
+          ✅ Modelo Star Schema com tabela Fato centralizada<br>
+          ✅ Tabela dCalendario marcada como "Tabela de Datas"<br>
+          ✅ Relações 1:N, direção única, sem ambiguidades<br>
+          ✅ Tipos de dados corretos (Moeda, Data, Inteiro)<br>
+          ✅ Colunas desnecessárias removidas do modelo
+        </div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)"><span>🧮 DAX & Performance</span><span class="acc-chevron">▼</span></button>
+        <div class="acc-body">
+          ✅ Medidas na tabela _Medidas com nomes claros<br>
+          ✅ DIVIDE() com tratamento de divisão por zero<br>
+          ✅ Performance Analyzer sem visuais &gt; 1 segundo<br>
+          ✅ Ausência de colunas calculadas desnecessárias<br>
+          ✅ Variáveis (VAR) usadas em medidas complexas
+        </div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)"><span>🎨 UX & Design</span><span class="acc-chevron">▼</span></button>
+        <div class="acc-body">
+          ✅ Hierarquia visual: KPIs no topo, gráficos no meio, tabelas abaixo<br>
+          ✅ Paleta de cores consistente (máximo 5 cores)<br>
+          ✅ Contraste acessível (WCAG AA: 4.5:1)<br>
+          ✅ Tooltips e botões de navegação funcionando<br>
+          ✅ Mobile layout testado
+        </div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)"><span>🔒 Segurança & Governança</span><span class="acc-chevron">▼</span></button>
+        <div class="acc-body">
+          ✅ RLS configurado e testado com todos os papéis<br>
+          ✅ Gateway de atualização agendado e autenticado<br>
+          ✅ Workspace correto (Dev/Hom/Prod)<br>
+          ✅ Dicionário de dados atualizado<br>
+          ✅ Permissões de compartilhamento revisadas
+        </div>
+      </div>
+    </div>
+
+    <h2 class="subsec">Comparação: Medida vs Coluna Calculada</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Aspecto</th><th>Medida</th><th>Coluna Calculada</th></tr></thead>
+        <tbody>
+          <tr><td>Avaliação</td><td>Dinamicamente (em runtime)</td><td>Na atualização do modelo</td></tr>
+          <tr><td>Contexto</td><td>Contexto de filtro</td><td>Contexto de linha</td></tr>
+          <tr><td>Armazenamento</td><td>Não ocupa espaço</td><td>Armazenada fisicamente</td></tr>
+          <tr><td>Uso em filtros</td><td>❌ Não pode ser usada para filtrar</td><td>✅ Pode filtrar/agrupar</td></tr>
+          <tr><td>Performance</td><td>⚡ Mais eficiente</td><td>🐢 Aumenta tamanho do modelo</td></tr>
+          <tr><td>Quando usar</td><td>KPIs, somas, médias, ratios</td><td>Categorias, faixas, segmentações</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────── -->
+  <!-- TAB 6: CHEAT SHEET -->
+  <!-- ─────────────────────────────────── -->
+  <div class="tab-panel" id="tab-cheatsheet">
+    <p class="section-title">Cheat Sheet — Referência Rápida DAX</p>
+    <p class="section-desc">As funções mais usadas no dia a dia organizadas por categoria. Salve ou imprima!</p>
+
+    <div class="callout callout-tip" style="margin-bottom:1.5rem;">
+      <div class="callout-title">💾 Dica</div>
+      Use Ctrl+P (ou Cmd+P no Mac) para imprimir esta página ou salvar como PDF e ter sempre em mãos.
+    </div>
+
+    <div class="cheat-grid">
+      <div class="cheat-card">
+        <div class="cheat-card-title">🔢 Agregação</div>
+        <div class="cheat-item"><span class="cheat-label">Soma</span><span class="cheat-val">SUM(tabela[col])</span></div>
+        <div class="cheat-item"><span class="cheat-label">Média</span><span class="cheat-val">AVERAGE(tabela[col])</span></div>
+        <div class="cheat-item"><span class="cheat-label">Máximo</span><span class="cheat-val">MAX(tabela[col])</span></div>
+        <div class="cheat-item"><span class="cheat-label">Mínimo</span><span class="cheat-val">MIN(tabela[col])</span></div>
+        <div class="cheat-item"><span class="cheat-label">Contar linhas</span><span class="cheat-val">COUNTROWS(tabela)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Contar únicos</span><span class="cheat-val">DISTINCTCOUNT(col)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Divisão segura</span><span class="cheat-val">DIVIDE(num, den, 0)</span></div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-title">🔁 Iteração (X)</div>
+        <div class="cheat-item"><span class="cheat-label">Soma iterada</span><span class="cheat-val">SUMX(table, expr)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Média iterada</span><span class="cheat-val">AVERAGEX(table, expr)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Máx iterado</span><span class="cheat-val">MAXX(table, expr)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Contar iterado</span><span class="cheat-val">COUNTX(table, expr)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Filtrar tabela</span><span class="cheat-val">FILTER(table, cond)</span></div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-title">📅 Time Intelligence</div>
+        <div class="cheat-item"><span class="cheat-label">Acumulado ano</span><span class="cheat-val">TOTALYTD(medida, data)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Acumulado mês</span><span class="cheat-val">TOTALMTD(medida, data)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Ano anterior</span><span class="cheat-val">SAMEPERIODLASTYEAR(col)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Mês anterior</span><span class="cheat-val">PREVIOUSMONTH(col)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Período desliz.</span><span class="cheat-val">DATESINPERIOD(col, data, n, [MONTH/DAY])</span></div>
+        <div class="cheat-item"><span class="cheat-label">Última data</span><span class="cheat-val">LASTDATE(col)</span></div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-title">🔧 Modificadores CALCULATE</div>
+        <div class="cheat-item"><span class="cheat-label">Remove filtros</span><span class="cheat-val">ALL(tabela/col)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Remove alguns</span><span class="cheat-val">ALLEXCEPT(tab, col...)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Não sobrescreve</span><span class="cheat-val">KEEPFILTERS(expr)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Ativa relação</span><span class="cheat-val">USERELATIONSHIP(col1, col2)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Remove filtros</span><span class="cheat-val">REMOVEFILTERS(col)</span></div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-title">🧪 Funções Lógicas</div>
+        <div class="cheat-item"><span class="cheat-label">Condicional</span><span class="cheat-val">IF(cond, v_true, v_false)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Múltiplas conds</span><span class="cheat-val">SWITCH(TRUE(), cond, val...)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Está vazio</span><span class="cheat-val">ISBLANK(expr)</span></div>
+        <div class="cheat-item"><span class="cheat-label">É número</span><span class="cheat-val">ISNUMBER(expr)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Primeiro não nulo</span><span class="cheat-val">COALESCE(a, b, c)</span></div>
+        <div class="cheat-item"><span class="cheat-label">E lógico</span><span class="cheat-val">AND(a, b) ou a && b</span></div>
+        <div class="cheat-item"><span class="cheat-label">Ou lógico</span><span class="cheat-val">OR(a, b) ou a || b</span></div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-title">📊 Ranking e Análise</div>
+        <div class="cheat-item"><span class="cheat-label">Rank</span><span class="cheat-val">RANKX(ALL(col), medida)</span></div>
+        <div class="cheat-item"><span class="cheat-label">N-ésimo valor</span><span class="cheat-val">TOPN(n, tabela, medida)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Percentil</span><span class="cheat-val">PERCENTILE.INC(col, k)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Resumo tabela</span><span class="cheat-val">SUMMARIZE(tab, col...)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Val selecionado</span><span class="cheat-val">SELECTEDVALUE(col, padrão)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Há um filtro?</span><span class="cheat-val">HASONEVALUE(col)</span></div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-title">📆 Data & Hora</div>
+        <div class="cheat-item"><span class="cheat-label">Hoje</span><span class="cheat-val">TODAY()</span></div>
+        <div class="cheat-item"><span class="cheat-label">Agora</span><span class="cheat-val">NOW()</span></div>
+        <div class="cheat-item"><span class="cheat-label">Ano</span><span class="cheat-val">YEAR(data)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Mês</span><span class="cheat-val">MONTH(data)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Dia</span><span class="cheat-val">DAY(data)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Diferença dias</span><span class="cheat-val">DATEDIFF(d1, d2, DAY)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Formatar data</span><span class="cheat-val">FORMAT(data, "DD/MM/YYYY")</span></div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-title">📝 Texto</div>
+        <div class="cheat-item"><span class="cheat-label">Concatenar</span><span class="cheat-val">a &amp; " " &amp; b</span></div>
+        <div class="cheat-item"><span class="cheat-label">Formatar</span><span class="cheat-val">FORMAT(valor, "R$ #,##0")</span></div>
+        <div class="cheat-item"><span class="cheat-label">Minúsculas</span><span class="cheat-val">LOWER(texto)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Maiúsculas</span><span class="cheat-val">UPPER(texto)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Trim</span><span class="cheat-val">TRIM(texto)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Contém?</span><span class="cheat-val">CONTAINSSTRING(col, "val")</span></div>
+        <div class="cheat-item"><span class="cheat-label">Substituir</span><span class="cheat-val">SUBSTITUTE(txt, old, new)</span></div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-title">🔍 Busca & Relação</div>
+        <div class="cheat-item"><span class="cheat-label">Valor rel.</span><span class="cheat-val">RELATED(dTab[col])</span></div>
+        <div class="cheat-item"><span class="cheat-label">Filtrar rel.</span><span class="cheat-val">RELATEDTABLE(tabela)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Lookup</span><span class="cheat-val">LOOKUPVALUE(col, sc, sv)</span></div>
+        <div class="cheat-item"><span class="cheat-label">Usuário atual</span><span class="cheat-val">USERPRINCIPALNAME()</span></div>
+        <div class="cheat-item"><span class="cheat-label">Nome usuário</span><span class="cheat-val">USERNAME()</span></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2 class="subsec">Padrões de Medidas Prontos para Copiar</h2>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">DAX — Templates de medidas prontos</span><button class="copy-btn" onclick="copyCode(this)">Copiar tudo</button></div>
+      <pre><span class="cmt">-- ═══════════════════════════════════════════</span>
+<span class="cmt">-- VENDAS & FINANCEIRO</span>
+<span class="cmt">-- ═══════════════════════════════════════════</span>
+<span class="fn">Total Vendas</span>      <span class="op">:=</span> <span class="fn">SUM</span>(fVendas[Valor])
+<span class="fn">Qtd Pedidos</span>       <span class="op">:=</span> <span class="fn">COUNTROWS</span>(fVendas)
+<span class="fn">Ticket Médio</span>      <span class="op">:=</span> <span class="fn">DIVIDE</span>([Total Vendas], [Qtd Pedidos], <span class="num">0</span>)
+<span class="fn">Margem %</span>          <span class="op">:=</span> <span class="fn">DIVIDE</span>([Margem Bruta], [Total Vendas], <span class="num">0</span>)
+
+<span class="cmt">-- ═══════════════════════════════════════════</span>
+<span class="cmt">-- TIME INTELLIGENCE</span>
+<span class="cmt">-- ═══════════════════════════════════════════</span>
+<span class="fn">Vendas YTD</span>        <span class="op">:=</span> <span class="fn">TOTALYTD</span>([Total Vendas], dCalendario[Date])
+<span class="fn">Vendas MTD</span>        <span class="op">:=</span> <span class="fn">TOTALMTD</span>([Total Vendas], dCalendario[Date])
+<span class="fn">Vendas LY</span>         <span class="op">:=</span> <span class="fn">CALCULATE</span>([Total Vendas], <span class="fn">SAMEPERIODLASTYEAR</span>(dCalendario[Date]))
+<span class="fn">Crescimento YoY %</span> <span class="op">:=</span> <span class="fn">DIVIDE</span>([Total Vendas] <span class="op">-</span> [Vendas LY], [Vendas LY], <span class="num">0</span>)
+<span class="fn">Vendas Mês Ant</span>    <span class="op">:=</span> <span class="fn">CALCULATE</span>([Total Vendas], <span class="fn">PREVIOUSMONTH</span>(dCalendario[Date]))
+
+<span class="cmt">-- ═══════════════════════════════════════════</span>
+<span class="cmt">-- STATUS & SEMÁFOROS</span>
+<span class="cmt">-- ═══════════════════════════════════════════</span>
+<span class="fn">Status Meta</span>       <span class="op">:=</span> <span class="fn">IF</span>([Atingimento %] <span class="op">&gt;=</span> <span class="num">1</span>, <span class="str">"✅ OK"</span>, <span class="str">"❌ Alerta"</span>)
+<span class="fn">Semáforo</span>          <span class="op">:=</span> <span class="fn">SWITCH</span>(<span class="kw">TRUE</span>(), [Atingimento %]<span class="op">&gt;=</span><span class="num">1</span>,<span class="str">"🟢"</span>, [Atingimento %]<span class="op">&gt;=</span><span class="num">0.8</span>,<span class="str">"🟡"</span>,<span class="str">"🔴"</span>)
+<span class="fn">Rank Produto</span>      <span class="op">:=</span> <span class="fn">RANKX</span>(<span class="fn">ALL</span>(dProduto), [Total Vendas],, <span class="fn">DESC</span>, <span class="fn">DENSE</span>)</pre>
+    </div>
+
+    <div class="share-box">
+      <div class="share-box-left">
+        <div class="share-box-icon">in</div>
+        <div class="share-box-text">
+          <strong>Compartilhe este Cheat Sheet no LinkedIn!</strong>
+          <span>Conecte-se a Leonardo Missio — BI Specialist · Power BI · DAX · Engenharia de Dados.</span>
+        </div>
+      </div>
+      <a class="btn-linkedin" href="https://www.linkedin.com/in/leonardo-henrique-silva-missio/" target="_blank" rel="noopener">Ver perfil</a>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <strong>Leonardo Henrique Silva Missio</strong>
+      <span>BI Specialist · Power BI · DAX · Engenharia de Dados · IA</span>
+    </div>
+    <div class="footer-links">
+      <a href="https://www.linkedin.com/in/leonardo-henrique-silva-missio/" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:leomissio72@gmail.com">E-mail</a>
+      <a href="https://leomissio72-cpu.github.io/portifolio/">Portfólio</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + target).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  // Accordion
+  function toggleAcc(header) {
+    const item = header.closest('.acc-item');
+    item.classList.toggle('open');
+    const body = item.querySelector('.acc-body');
+    body.style.display = item.classList.contains('open') ? 'block' : 'none';
+  }
+
+  // Copy code
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    const text = pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
